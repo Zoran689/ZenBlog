@@ -44,8 +44,12 @@
       ],
       "category": "public.app-category.productivity",
       "icon": "logo.png",
-      "artifactName": "ZenBlog-${version}-mac-${arch}.${ext}"
+      "artifactName": "ZenBlog-${version}-mac-${arch}.${ext}",
+      "hardenedRuntime": false,
+      "gatekeeperAssess": false,
+      "identity": null
     },
+    "afterPack": "./electron/afterPack.js",
     "win": {
       "target": [
         {
