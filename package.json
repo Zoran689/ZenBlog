@@ -23,6 +23,7 @@
       "electron/**/*",
       "index.html",
       "logo.png",
+      "logo.ico",
       "zenblog_backend.py",
       "requirements.txt",
       "data/**/*",
@@ -57,14 +58,14 @@
           "arch": ["x64"]
         }
       ],
-      "icon": "logo.png",
+      "icon": "logo.ico",
       "artifactName": "ZenBlog-${version}-win-x64.${ext}"
     },
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
-      "installerIcon": "logo.png",
-      "uninstallerIcon": "logo.png"
+      "installerIcon": "logo.ico",
+      "uninstallerIcon": "logo.ico"
     },
     "linux": {
       "target": ["AppImage"],
