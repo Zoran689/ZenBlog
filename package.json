@@ -1,0 +1,75 @@
+{
+  "name": "zenblog",
+  "version": "5.0.0",
+  "description": "ZenBlog - 禅意博客文章管理系统",
+  "main": "electron/main.js",
+  "scripts": {
+    "start": "electron .",
+    "pack:mac": "electron-builder --mac",
+    "pack:win": "electron-builder --win",
+    "pack:linux": "electron-builder --linux",
+    "pack:all": "electron-builder --mac --win --linux",
+    "dist": "electron-builder"
+  },
+  "author": "Zoran Sun",
+  "license": "MIT",
+  "build": {
+    "appId": "com.zenblog.app",
+    "productName": "ZenBlog",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "electron/**/*",
+      "index.html",
+      "logo.png",
+      "zenblog_backend.py",
+      "requirements.txt",
+      "data/**/*",
+      "images/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "python-dist/",
+        "to": "python-dist/",
+        "filter": ["**/*"]
+      }
+    ],
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["x64", "arm64"]
+        }
+      ],
+      "category": "public.app-category.productivity",
+      "icon": "logo.png",
+      "artifactName": "ZenBlog-${version}-mac-${arch}.${ext}"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "logo.png",
+      "artifactName": "ZenBlog-${version}-win-x64.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "installerIcon": "logo.png",
+      "uninstallerIcon": "logo.png"
+    },
+    "linux": {
+      "target": ["AppImage"],
+      "category": "Office",
+      "artifactName": "ZenBlog-${version}-linux-x64.${ext}"
+    }
+  },
+  "devDependencies": {
+    "electron": "^35.0.0",
+    "electron-builder": "^25.0.0"
+  }
+}

@@ -1,6 +1,6 @@
-# ZenBlog
+# ZenBlog 🧘
 
-一个精美的缠中说禅博客文集系统 ，提供Mac和Windows安装包下载
+禅意博客文章管理系统 — 缠中说禅博客全集阅读器。
 
 ![Python 3.14+](https://img.shields.io/badge/Python-3.14+-blue)
 ![FastAPI](https://img.shields.io/badge/FastAPI-Latest-green)
@@ -16,47 +16,69 @@
 - 🖼️ **图片支持** — 文章配图展示与灯箱预览
 - 📱 **响应式** — 桌面 / 平板 / 手机自适应
 - ⚡ **轻量** — 后端仅 330 行，零外部依赖（除 FastAPI）
+- 🖥️ **桌面应用** — 支持 macOS / Windows / Linux
 
 ## 🏗️ 架构
 
 ```
 ZenBlog/
-├── zenblog_backend.py    # FastAPI 后端（16 个 API 路由）
-├── index.html            # 单页应用前端
-├── start.sh              # 启动脚本
-├── stop.sh               # 停止脚本
-├── logo.png              # 站点 Logo
-├── data/                 # 文章数据（JSON 存储）
-│   ├── index.json        #   文章索引 + 分类 + 元数据
-│   ├── content_*.json    #   分批存储的文章内容
-│   └── stars.json        #   星标列表
-└── images/               # 博客图片资源
+├── electron/              # Electron 主进程
+│   ├── main.js            # 主进程入口
+│   └── preload.js         # 预加载脚本
+├── zenblog_backend.py     # FastAPI 后端（16 个 API 路由）
+├── index.html             # 单页应用前端
+├── start.sh               # 启动脚本
+├── stop.sh                # 停止脚本
+├── logo.png               # 站点 Logo
+├── package.json           # Electron 配置
+├── requirements.txt       # Python 依赖
+├── build_python.sh        # PyInstaller 打包脚本
+├── data/                  # 文章数据（JSON 存储）
+│   ├── index.json         #   文章索引 + 分类 + 元数据
+│   ├── content_*.json     #   分批存储的文章内容
+│   └── stars.json         #   星标列表
+└── images/                # 博客图片资源
 ```
 
 | 层   | 技术                                              |
 | ---- | ------------------------------------------------- |
 | 后端 | Python / FastAPI                                  |
 | 前端 | 原生 HTML + CSS + JavaScript（无框架）            |
+| 桌面 | Electron + electron-builder                       |
 | 数据 | JSON 文件（无需数据库）                           |
 | 编辑 | [marked.js](https://marked.js.org/) Markdown 渲染 |
 
 ## 🚀 快速开始
 
-### 方式一：一键启动
+### 方式一：本地运行（开发）
 
 ```bash
-chmod +x start.sh
+pip install -r requirements.txt
 ./start.sh
 # 打开 http://localhost:8877
 ```
 
-### 方式二：手动启动
+### 方式二：Electron 桌面应用（开发）
 
 ```bash
-pip install fastapi uvicorn requests
-python3 zenblog_backend.py
-# 打开 http://localhost:8877
+npm install
+npm start
 ```
+
+### 方式三：打包为桌面应用
+
+```bash
+# 1. 先打包 Python 后端
+./build_python.sh
+
+# 2. 打包 Electron 应用
+npm run pack:mac    # macOS (dmg)
+npm run pack:win    # Windows (nsis)
+npm run pack:linux  # Linux (AppImage)
+npm run pack:all    # 全部平台
+```
+
+打包产物输出到 `release/` 目录。
 
 ### 停止服务
 
@@ -114,4 +136,4 @@ python3 zenblog_backend.py
 
 ## 📄 License
 
-MIT License
+MIT
