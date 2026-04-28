@@ -487,6 +487,7 @@ a:hover { color: #0D47A1; text-decoration: underline; }
         </div>
     </div>
 
+<script src="js/api.js"></script>
 <script>
 // 动态加载外部库
 function loadScript(src) {
@@ -512,6 +513,7 @@ ensureLibs();
 
 let allArticles = [];
 let filteredArticles = [];
+let _zenapiReady = false;
 let currentPage = 0;
 const PER_PAGE = 50;
 let currentFilter = { type: 'all', value: 'all' };
@@ -639,10 +641,11 @@ if (typeof marked !== 'undefined') {
 
 async function init() {
     await ensureLibs();
+    await ZenAPI.init();
+    _zenapiReady = true;
     try {
-        const resp = await fetch('data/index.json');
-        const data = await resp.json();
-        allArticles = data.articles;
+        const data = await ZenAPI.getArticles();
+        allArticles = data.articles || [];
         stockLessons = data.stock_lessons || {};
         
         // Load category metadata
@@ -692,17 +695,14 @@ async function loadStars() {
     if (local) {
         try { starredIdxs = new Set(JSON.parse(local)); } catch(e) {}
     }
-    // Sync with server
+    // Sync from API (backend or static)
     try {
-        const resp = await fetch('/api/stars');
-        if (resp.ok) {
-            const data = await resp.json();
-            const serverStars = new Set(data.starred_idxs || []);
-            // Merge: union of local and server
-            for (const idx of serverStars) starredIdxs.add(idx);
-            saveStarsLocal();
-            syncStarsToServer();
-        }
+        const data = await ZenAPI.getStars();
+        const serverStars = new Set(data.starred_idxs || data || []);
+        // Merge: union of local and server
+        for (const idx of serverStars) starredIdxs.add(idx);
+        saveStarsLocal();
+        syncStarsToServer();
     } catch(e) {}
 }
 
@@ -711,11 +711,7 @@ function saveStarsLocal() {
 }
 
 function syncStarsToServer() {
-    fetch('/api/stars', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ starred_idxs: [...starredIdxs] })
-    }).catch(() => {});
+    ZenAPI.saveStars({ starred_idxs: [...starredIdxs] }).catch(() => {});
 }
 
 function isStarred(idx) { return starredIdxs.has(idx); }
@@ -947,11 +943,7 @@ async function onDrop(e) {
     
     // Save to server
     try {
-        await fetch('/api/article/reorder', {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ category: cat, order: newOrder })
-        });
+        await ZenAPI.reorderArticles(newOrder.map((idx, i) => ({ idx, order: i })));
     } catch(err) {
         console.error('保存排序失败:', err);
     }
@@ -1062,11 +1054,7 @@ async function onCatDrop(e) {
 
     // Save to server
     try {
-        await fetch('/api/category/reorder', {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ order: allCategories })
-        });
+        await ZenAPI.reorderCategories(allCategories);
     } catch(err) {
         console.error('保存分类排序失败:', err);
     }
@@ -1193,12 +1181,8 @@ async function ctxArticleRename() {
         const newTitle = result.newTitle.trim();
         if (!newTitle || newTitle === article.title) return;
 
-        const resp = await fetch('/api/article/rename', {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ idx: idx, title: newTitle })
-        });
-        if (!resp.ok) { const err = await resp.json(); throw new Error(err.error || '重命名失败'); }
+        const resp = await ZenAPI.renameArticle(idx, newTitle);
+        if (resp.status !== 'ok') throw new Error('重命名失败');
 
         // 更新本地数据
         article.title = newTitle;
@@ -1228,12 +1212,8 @@ async function ctxRename() {
         const newName = result.newName.trim();
         if (!newName || newName === cat) return;
         
-        const resp = await fetch('/api/category/rename', {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ old_name: cat, new_name: newName })
-        });
-        if (!resp.ok) { const err = await resp.json(); throw new Error(err.error || '重命名失败'); }
+        const resp = await ZenAPI.renameCategory(cat, newName);
+        if (resp.status !== 'ok') throw new Error('重命名失败');
         
         // Update local data
         const idx = allCategories.indexOf(cat);
@@ -1296,10 +1276,8 @@ async function confirmDeleteCategory(cat) {
     document.querySelector('.confirm-overlay')?.remove();
     
     try {
-        const resp = await fetch('/api/category?name=' + encodeURIComponent(cat) + '&move_to=' + encodeURIComponent(moveTarget), {
-            method: 'DELETE'
-        });
-        if (!resp.ok) { const err = await resp.json(); throw new Error(err.error || '删除失败'); }
+        const resp = await ZenAPI.deleteCategory(cat, moveTarget);
+        if (resp.status !== 'deleted') throw new Error('删除失败');
         
         // Update local
         allCategories = allCategories.filter(c => c !== cat);
@@ -1327,12 +1305,8 @@ async function addCategoryPrompt() {
         if (!name) { await customAlert('提示', '分类名称不能为空'); return; }
         if (allCategories.includes(name)) { await customAlert('提示', '分类 "' + name + '" 已存在'); return; }
         
-        const resp = await fetch('/api/category/add', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: name, icon: icon })
-        });
-        if (!resp.ok) { const err = await resp.json(); throw new Error(err.error || '添加失败'); }
+        const newCat = await ZenAPI.addCategory(name);
+        if (!newCat.id) throw new Error('添加失败');
         
         allCategories.push(name);
         categoryMeta[name] = { icon: icon, order: Object.keys(categoryMeta).length };
@@ -1572,12 +1546,8 @@ function updateBreadcrumb(article) {
 
 async function moveArticleCategory(idx, newCategory) {
     try {
-        const resp = await fetch('/api/article/move', {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ idx: idx, category: newCategory })
-        });
-        if (!resp.ok) { const err = await resp.json(); throw new Error(err.error || '移动失败'); }
+        const resp = await ZenAPI.moveArticle(idx, newCategory);
+        if (resp.status !== 'ok') throw new Error('移动失败');
         
         // Update local
         const a = allArticles.find(a => a.idx === idx);
@@ -1639,12 +1609,8 @@ async function saveArticle() {
     btn.innerHTML = '⏳ 保存中...';
     btn.disabled = true;
     try {
-        const resp = await fetch('/api/article', {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ idx: currentArticleIdx, content: newContent })
-        });
-        if (!resp.ok) { const err = await resp.json(); throw new Error(err.error || '保存失败'); }
+        const resp = await ZenAPI.saveArticle({ idx: currentArticleIdx, content: newContent });
+        if (resp.status !== 'saved') throw new Error('保存失败');
         const batchIdx = Math.floor(currentArticleIdx / 100);
         const batchKey = 'batch_' + batchIdx;
         if (contentCache[batchKey]) contentCache[batchKey][String(currentArticleIdx)] = newContent;
@@ -1711,12 +1677,8 @@ async function addCategoryPromptWithValue(name, icon) {
     icon = icon || '📄';
     
     try {
-        const resp = await fetch('/api/category/add', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: name, icon: icon })
-        });
-        if (!resp.ok) { const err = await resp.json(); throw new Error(err.error || '添加失败'); }
+        const newCat = await ZenAPI.addCategory(name);
+        if (!newCat.id) throw new Error('添加失败');
         
         allCategories.push(name);
         categoryMeta[name] = { icon: icon, order: Object.keys(categoryMeta).length };
@@ -1799,14 +1761,8 @@ async function createNewArticle() {
     btn.disabled = true;
     
     try {
-        const resp = await fetch('/api/article/new', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ title, category, date: date || new Date().toISOString().split('T')[0], time: new Date().toTimeString().substring(0,5), content })
-        });
-        if (!resp.ok) { const err = await resp.json(); throw new Error(err.error || '创建失败'); }
-        
-        const result = await resp.json();
+        const result = await ZenAPI.saveArticle({ title, category, content });
+        if (result.status !== 'saved') throw new Error('创建失败');
         
         const newIdx = result.idx;
         const preview = content.replace(/\n/g, ' ').trim().substring(0, 150);
