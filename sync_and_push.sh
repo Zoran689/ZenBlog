@@ -41,7 +41,7 @@ else
     echo ""
 
     echo "✅ 全部完成！"
-    echo "   GitHub Pages: https://zoran689.github.io/ZenBlog/"
+    echo "   GitHub Pages: https://Zoran689.github.io/ZenBlog/"
     echo "   部署状态:   https://github.com/Zoran689/ZenBlog/actions"
 else
     echo "✅ 完成（无变更）"
