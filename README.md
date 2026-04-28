@@ -2,7 +2,7 @@
 
 禅意博客文章管理系统 — 缠中说禅博客全集阅读器。
 
-[![GitHub Pages](https://img.shields.io/badge/ZenBlog-在线访问-00BFA5?style=flat-square)](https://zor689.github.io/ZenBlog/)
+[![GitHub Pages](https://img.shields.io/badge/ZenBlog-在线访问-00BFA5?style=flat-square)](https://zoran689.github.io/ZenBlog/)
 [![GitHub Release](https://img.shields.io/github/v/release/Zoran689/ZenBlog?style=flat-square&label=下载安装包)](https://github.com/Zoran689/ZenBlog/releases/latest)
 ![Python 3.14+](https://img.shields.io/badge/Python-3.14+-blue?style=flat-square)
 ![FastAPI](https://img.shields.io/badge/FastAPI-Latest-green?style=flat-square)
@@ -15,7 +15,7 @@
 
 | 方式 | 链接 | 说明 |
 |------|------|------|
-| 🌍 **在线版** | [**zor689.github.io/ZenBlog**](https://zor689.github.io/ZenBlog/) | GitHub Pages 托管，无需安装，浏览器直接打开 |
+| 🌍 **在线版** | [**zoran689.github.io/ZenBlog**](https://zoran689.github.io/ZenBlog/) | GitHub Pages 托管，无需安装，浏览器直接打开 |
 | 🍎 **macOS** | [ZenBlog-x.x.x-mac-arm64.dmg](https://github.com/Zoran689/ZenBlog/releases/latest) | Apple Silicon（M 系列芯片） |
 | 🍎 **macOS** | [ZenBlog-x.x.x-mac-x64.dmg](https://github.com/Zoran689/ZenBlog/releases/latest) | Intel 芯片 |
 | 🪟 **Windows** | [ZenBlog-x.x.x-win-x64.exe](https://github.com/Zoran689/ZenBlog/releases/latest) | Windows 10/11 x64 |
@@ -90,7 +90,7 @@ ZenBlog 支持三种运行模式：
 
 ### 方式一：在线浏览（无需安装）
 
-直接打开 [**zor689.github.io/ZenBlog**](https://zor689.github.io/ZenBlog/) 即可阅读全部文章。
+直接打开 [**zoran689.github.io/ZenBlog**](https://zoran689.github.io/ZenBlog/) 即可阅读全部文章。
 
 ### 方式二：下载桌面应用
 
