@@ -538,6 +538,30 @@ async def blog_migrate_data():
     }
 
 
+@app.post("/api/sync")
+async def blog_sync_to_json():
+    """将 MySQL 数据同步回 data/index.json 和 data/content_*.json"""
+    import subprocess
+    import sys
+
+    sync_script = SITE_DIR / 'sync_to_json.py'
+    if not sync_script.exists():
+        raise HTTPException(500, "sync_to_json.py not found")
+
+    result = subprocess.run(
+        [sys.executable, str(sync_script)],
+        capture_output=True, text=True, cwd=str(SITE_DIR)
+    )
+
+    if result.returncode != 0:
+        raise HTTPException(500, f"Sync failed: {result.stderr}")
+
+    return {
+        "status": "synced",
+        "output": result.stdout.strip().split('\n'),
+    }
+
+
 # ============================================================
 # 静态文件服务
 # ============================================================
