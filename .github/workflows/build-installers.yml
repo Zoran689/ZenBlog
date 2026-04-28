@@ -1,0 +1,134 @@
+name: Build Installers
+
+on:
+  workflow_dispatch:        # 手动触发
+  push:
+    tags:
+      - 'v*'                # 推送 tag 时自动触发（如 v5.0.3）
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python 3.14
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+
+      - name: Install Python dependencies
+        run: |
+          pip install pyinstaller fastapi uvicorn pydantic pymysql requests uvicorn
+
+      - name: PyInstaller - Build Windows backend
+        run: |
+          pyinstaller --onefile `
+            --name zenblog_backend `
+            --distpath python-dist `
+            --add-data "data;data" `
+            --add-data "images;images" `
+            --add-data "index.html;." `
+            --add-data "logo.png;." `
+            --hidden-import uvicorn `
+            --hidden-import uvicorn.logging `
+            --hidden-import uvicorn.loops `
+            --hidden-import uvicorn.loops.auto `
+            --hidden-import uvicorn.protocols `
+            --hidden-import uvicorn.protocols.http `
+            --hidden-import uvicorn.protocols.http.auto `
+            --hidden-import uvicorn.protocols.websocket `
+            --hidden-import uvicorn.protocols.websocket.auto `
+            --hidden-import fastapi `
+            --hidden-import pydantic `
+            --hidden-import starlette `
+            --hidden-import starlette.routing `
+            --hidden-import starlette.middleware `
+            --hidden-import starlette.middleware.cors `
+            --hidden-import starlette.staticfiles `
+            --hidden-import starlette.responses `
+            --hidden-import requests `
+            zenblog_backend.py
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Build Windows installer
+        run: npm run pack:win
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Windows installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: ZenBlog-Windows
+          path: release/ZenBlog-*-win-x64.*
+          if-no-files-found: error
+
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python 3.14
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+
+      - name: Install Python dependencies
+        run: |
+          pip install pyinstaller fastapi uvicorn pydantic pymysql requests uvicorn
+
+      - name: PyInstaller - Build Linux backend
+        run: |
+          pyinstaller --onefile \
+            --name zenblog_backend \
+            --distpath python-dist \
+            --add-data "data:data" \
+            --add-data "images:images" \
+            --add-data "index.html:." \
+            --add-data "logo.png:." \
+            --hidden-import uvicorn \
+            --hidden-import uvicorn.logging \
+            --hidden-import uvicorn.loops \
+            --hidden-import uvicorn.loops.auto \
+            --hidden-import uvicorn.protocols \
+            --hidden-import uvicorn.protocols.http \
+            --hidden-import uvicorn.protocols.http.auto \
+            --hidden-import uvicorn.protocols.websocket \
+            --hidden-import uvicorn.protocols.websocket.auto \
+            --hidden-import fastapi \
+            --hidden-import pydantic \
+            --hidden-import starlette \
+            --hidden-import starlette.routing \
+            --hidden-import starlette.middleware \
+            --hidden-import starlette.middleware.cors \
+            --hidden-import starlette.staticfiles \
+            --hidden-import starlette.responses \
+            --hidden-import requests \
+            zenblog_backend.py
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Build Linux AppImage
+        run: npm run pack:linux
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Linux AppImage
+        uses: actions/upload-artifact@v4
+        with:
+          name: ZenBlog-Linux
+          path: release/ZenBlog-*-linux-x64.*
+          if-no-files-found: error
