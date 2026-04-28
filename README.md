@@ -2,7 +2,7 @@
   <img src="logo.png" alt="ZenBlog" width="200">
 </p>
 
-禅意博客文章管理系统 — 缠中说禅博客全集阅读器。
+** 缠中说禅博客文集 - ZenBlog **
 
 [![GitHub Pages](https://img.shields.io/badge/ZenBlog-在线访问-00BFA5?style=flat-square)](https://Zoran689.github.io/ZenBlog/)
 [![GitHub Release](https://img.shields.io/github/v/release/Zoran689/ZenBlog?style=flat-square&label=下载安装包)](https://github.com/Zoran689/ZenBlog/releases/latest)
