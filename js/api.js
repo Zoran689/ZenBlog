@@ -112,6 +112,7 @@ const ZenAPI = (() => {
 
     /**
      * 获取文章列表（含分类/星标元数据）
+     * 静态模式下，如果 localStorage 为空，自动从 data/index.json 加载初始数据
      */
     async function getArticles() {
         if (_mode === 'backend') {
@@ -120,7 +121,31 @@ const ZenAPI = (() => {
                 if (resp.ok) return await resp.json();
             } catch(e) {}
         }
-        return _getIndex();
+        // 静态模式：检查 localStorage 是否有数据
+        let data = _getIndex();
+        const articles = data.articles || [];
+        if (articles.length === 0) {
+            // 尝试从静态文件加载初始数据
+            try {
+                const resp = await fetch('data/index.json');
+                if (resp.ok) {
+                    const fileData = await resp.json();
+                    // 合并文件数据到 localStorage
+                    const merged = {
+                        articles: fileData.articles || [],
+                        categories: fileData.categories || {},
+                        stars: fileData.stars || [],
+                        cat_orders: fileData.cat_orders || {},
+                        stock_lessons: fileData.stock_lessons || {}
+                    };
+                    _lsSet(LS_INDEX, merged);
+                    data = _getIndex(); // 重新获取（经过格式转换）
+                }
+            } catch(e) {
+                console.warn('[ZenAPI] 无法从 data/index.json 加载初始数据:', e);
+            }
+        }
+        return data;
     }
 
     /**
