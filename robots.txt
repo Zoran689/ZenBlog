@@ -1,0 +1,8 @@
+# ZenBlog - 缠中说禅博客全集
+# 允许所有搜索引擎抓取
+
+User-agent: *
+Allow: /
+
+# Sitemap 位置
+Sitemap: https://zoran689.github.io/ZenBlog/sitemap.xml
