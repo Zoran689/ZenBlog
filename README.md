@@ -1,4 +1,4 @@
-# <img src="logo.png" alt="ZenBlog" width="48" height="48" style="vertical-align: middle;"> ZenBlog
+# <img src="logo.png" alt="ZenBlog" width="48" height="48" style="vertical-align: middle;"> 
 
 禅意博客文章管理系统 — 缠中说禅博客全集阅读器。
 
