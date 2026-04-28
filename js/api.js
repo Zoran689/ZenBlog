@@ -9,6 +9,14 @@
  */
 
 const ZenAPI = (() => {
+    // ── 基础路径 ──────────────────────────────────────────
+    // 自动检测是否在子路径下（如 GitHub Pages 的 /ZenBlog/）
+    const BASE = (() => {
+        const path = window.location.pathname;
+        const idx = path.lastIndexOf('/');
+        return idx > 0 ? path.substring(0, idx) : '';
+    })();
+
     // ── 模式 ──────────────────────────────────────────────
     let _mode = 'auto'; // 'auto' | 'backend' | 'static'
     let _backendReady = false;
@@ -127,7 +135,7 @@ const ZenAPI = (() => {
         if (articles.length === 0) {
             // 尝试从静态文件加载初始数据
             try {
-                const resp = await fetch('data/index.json');
+                const resp = await fetch(BASE + '/data/index.json');
                 if (resp.ok) {
                     const fileData = await resp.json();
                     // 合并文件数据到 localStorage
@@ -432,7 +440,7 @@ const ZenAPI = (() => {
         // 尝试从静态文件加载
         const batchIdx = Math.floor(idx / 100);
         try {
-            const resp = await fetch(`data/content_${batchIdx}.json`);
+            const resp = await fetch(BASE + `/data/content_${batchIdx}.json`);
             if (resp.ok) {
                 const data = await resp.json();
                 // 缓存到 localStorage

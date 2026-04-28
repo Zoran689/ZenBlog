@@ -1513,7 +1513,8 @@ async function loadContent(idx) {
     const batchKey = 'batch_' + batchIdx;
     if (contentCache[batchKey]) return contentCache[batchKey][String(idx)] || '内容加载失败';
     try {
-        const resp = await fetch('data/content_' + batchIdx + '.json');
+        const base = window.location.pathname.lastIndexOf('/') > 0 ? window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/')) : '';
+        const resp = await fetch(base + '/data/content_' + batchIdx + '.json');
         const data = await resp.json();
         contentCache[batchKey] = data;
         return data[String(idx)] || '内容加载失败';
@@ -1777,7 +1778,8 @@ async function createNewArticle() {
         const batchKey = 'batch_' + batchIdx;
         if (!contentCache[batchKey]) {
             try {
-                const bresp = await fetch('data/content_' + batchIdx + '.json');
+                const base = window.location.pathname.lastIndexOf('/') > 0 ? window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/')) : '';
+                const bresp = await fetch(base + '/data/content_' + batchIdx + '.json');
                 contentCache[batchKey] = await bresp.json();
             } catch(e) { contentCache[batchKey] = {}; }
         }
