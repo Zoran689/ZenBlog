@@ -1,4 +1,6 @@
-# <img src="logo.png" alt="ZenBlog" width="48" height="48" style="vertical-align: middle;"> 
+<p align="center">
+  <img src="logo.png" alt="ZenBlog" width="200">
+</p>
 
 禅意博客文章管理系统 — 缠中说禅博客全集阅读器。
 
